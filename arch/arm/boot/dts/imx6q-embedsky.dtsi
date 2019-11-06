@@ -34,17 +34,47 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		reg_3p3v: regulator@0 {
+		/* VDD_5V0 */
+		reg_5p0v: regulator-5p0v {
 			compatible = "regulator-fixed";
-			regulator-name = "3P3V";
+			regulator-name = "5p0v";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			regulator-always-on;
+		};
+
+		/* VDD_3V3 (5*(1+R1/R2) = 3.314) */
+		reg_3p3v: regulator-3p3v {
+			compatible = "regulator-fixed";
+			regulator-name = "3p3v";
 			regulator-min-microvolt = <3300000>;
 			regulator-max-microvolt = <3300000>;
 			regulator-always-on;
 		};
 
+		/* VDD_DDR (0.6*(1+R1/R2) = 1.50) */
+		reg_1p5v: regulator-1p5v {
+			compatible = "regulator-fixed";
+			regulator-name = "1p5v";
+			regulator-min-microvolt = <1500000>;
+			regulator-max-microvolt = <1500000>;
+			regulator-ramp-delay = <7000>;
+			regulator-always-on;
+		};
+
+		/* VDD_1V34 (0.8*(1+R1/R2) = 1.34) */
+		reg_1p34v: regulator-1p34v {
+			compatible = "regulator-fixed";
+			regulator-name = "1p34v";
+			regulator-min-microvolt = <1340000>;
+			regulator-max-microvolt = <1340000>;
+			regulator-ramp-delay = <5000>;
+			regulator-always-on;
+		};
+
 		reg_usbotg_vbus: regulator@1 {
 			compatible = "regulator-fixed";
-			reg = <0>;
+			reg = <1>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&pinctrl_usbotg_vbus>;
 			regulator-name = "usbotg_vbus";
@@ -56,15 +86,17 @@
 
 		reg_usb_h1_vbus: regulator@2 {
 			compatible = "regulator-fixed";
+			reg = <2>;
 			regulator-name = "usb_h1_vbus";
 			regulator-min-microvolt = <5000000>;
 			regulator-max-microvolt = <5000000>;
+			regulator-boot-on;
 			regulator-always-on;
 		};
 
 		reg_audio: regulator@3 {
 			compatible = "regulator-fixed";
-			reg = <1>;
+			reg = <3>;
 			regulator-name = "wm8960-supply";
 			regulator-always-on;
 			regulator-boot-on;
@@ -73,6 +105,7 @@
 
 		reg_mipi_dsi_pwr_on: mipi_dsi_pwr_on {
 			compatible = "regulator-fixed";
+			reg = <4>;
 			regulator-name = "mipi_dsi_pwr_on";
 			gpio = <&gpio1 21 GPIO_ACTIVE_HIGH>;
 			enable-active-high;
@@ -107,8 +140,7 @@
 	};
 
 	sound {
-                compatible = "fsl,imx6q-embedsky-wm8960",
-                           "fsl,imx-audio-wm8960";
+		compatible = "fsl,imx-audio-wm8960";
 		model = "wm8960-audio";
 		cpu-dai = <&ssi2>;
 		audio-codec = <&codec>;
@@ -367,7 +399,7 @@
 			fsl,pins = <
 				MX6QDL_PAD_CSI0_DAT7__AUD3_RXD		0x130b0
 				MX6QDL_PAD_CSI0_DAT4__AUD3_TXC		0x130b0
-				MX6QDL_PAD_CSI0_DAT5__AUD3_TXD		0x110b0
+				MX6QDL_PAD_CSI0_DAT5__AUD3_TXD		0x130b0
 				MX6QDL_PAD_CSI0_DAT6__AUD3_TXFS		0x130b0
 				MX6QDL_PAD_GPIO_0__CCM_CLKO1            0x130b0 /* AUD4_MCK */
 			>;
@@ -533,22 +565,22 @@
 
 		pinctrl_flexcan1: flexcan1grp {
 			fsl,pins = <
-				MX6QDL_PAD_GPIO_7__FLEXCAN1_TX          0x1b0b0
-				MX6QDL_PAD_GPIO_8__FLEXCAN1_RX          0x1b0b0
+				MX6QDL_PAD_GPIO_7__FLEXCAN1_TX		0x1b0b0
+				MX6QDL_PAD_GPIO_8__FLEXCAN1_RX		0x1b0b0
 			>;
 		};
 
 		pinctrl_flexcan2: flexcan2grp {
 			fsl,pins = <
-				MX6QDL_PAD_KEY_COL4__FLEXCAN2_TX        0x1b0b0
-				MX6QDL_PAD_KEY_ROW4__FLEXCAN2_RX        0x1b0b0
+				MX6QDL_PAD_KEY_COL4__FLEXCAN2_TX	0x1b0b0
+				MX6QDL_PAD_KEY_ROW4__FLEXCAN2_RX	0x1b0b0
 			>;
 		};
 
 		pinctrl_uart1: uart1grp {
 			fsl,pins = <
-				MX6QDL_PAD_SD3_DAT7__UART1_TX_DATA      0x1b0b1
-				MX6QDL_PAD_SD3_DAT6__UART1_RX_DATA      0x1b0b1
+				MX6QDL_PAD_SD3_DAT7__UART1_TX_DATA	0x1b0b1
+				MX6QDL_PAD_SD3_DAT6__UART1_RX_DATA	0x1b0b1
 			>;
 		};
 
@@ -703,6 +735,32 @@
 	status = "okay";
 };
 
+&reg_vdd1p1 {
+	vin-supply = <&reg_1p34v>;
+};
+
+&reg_vdd2p5 {
+	vin-supply = <&reg_3p3v>;
+};
+
+/*
+&reg_vdd3p0 {
+	vin-supply = <&reg_3p3v>;
+};
+*/
+
+&reg_arm {
+       vin-supply = <&reg_1p34v>;
+};
+
+&reg_pu {
+       vin-supply = <&reg_1p34v>;
+};
+
+&reg_soc {
+       vin-supply = <&reg_1p34v>;
+};
+
 &ssi2 {
 	assigned-clocks = <&clks IMX6QDL_CLK_PLL4>,
 			  <&clks IMX6QDL_PLL4_BYPASS>,
@@ -720,6 +778,11 @@
 	status = "okay";
 };
 
+&usbh1 {
+	vbus-supply = <&reg_usb_h1_vbus>;
+	status = "okay";
+};
+
 &usbotg {
 	vbus-supply = <&reg_usbotg_vbus>;
 	pinctrl-names = "default";
@@ -732,9 +795,12 @@
 	status = "okay";
 };
 
-&usbh1 {
-        vbus-supply = <&reg_usb_h1_vbus>;
-        status = "okay";
+&usbphy1 {
+	fsl,tx-d-cal = <106>;
+};
+
+&usbphy2 {
+	fsl,tx-d-cal = <106>;
 };
 
 &usdhc2 {
