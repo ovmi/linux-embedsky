@@ -117,13 +117,6 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_gpio_keys>;
 
-		power {
-			label = "Power Button";
-			gpios = <&gpio6 31 GPIO_ACTIVE_LOW>;
-			wakeup-source;
-			linux,code = <KEY_POWER>;
-		};
-
 		volume-up {
 			label = "Volume Up";
 			gpios = <&gpio4 8 GPIO_ACTIVE_LOW>;
@@ -139,13 +132,24 @@
 		};
 	};
 
+
+	gpio-restart {
+		compatible = "gpio-restart";
+		pinctrl-0 = <&pinctrl_gpio_power>;
+		gpios = <&gpio4 9 GPIO_ACTIVE_HIGH>;
+		priority = <128>;
+		active-delay = <100>;
+		inactive-delay = <100>;
+		wait-delay = <3000>;
+	};
+
 	sound {
 		compatible = "fsl,imx-audio-wm8960";
 		model = "wm8960-audio";
 		cpu-dai = <&ssi2>;
 		audio-codec = <&codec>;
 		asrc-controller = <&asrc>;
-		gpr = <&gpr 4 0x100000 0x100000>;
+		gpr = <&gpr>;
 		codec-master;
 		hp-det-gpios = <&gpio3 31 1>;
 		mux-int-port = <2>;
@@ -388,7 +392,6 @@
 			fsl,pins = <
 				MX6QDL_PAD_GPIO_4__GPIO1_IO04	0x80000000 /* SD2_CD */
 				MX6QDL_PAD_GPIO_2__GPIO1_IO02	0x80000000 /* SD2_WP */
-				MX6QDL_PAD_EIM_BCLK__GPIO6_IO31	0x80000000
 				MX6QDL_PAD_GPIO_9__GPIO1_IO09	0x80000000
 				MX6QDL_PAD_ENET_CRS_DV__GPIO1_IO25 0x80000000
 				MX6QDL_PAD_EIM_D31__GPIO3_IO31	0x80000000  /* HP_DETECT */
@@ -445,6 +448,12 @@
 			fsl,pins = <
 				MX6QDL_PAD_KEY_COL1__GPIO4_IO08		0x1b0b0 /* KEY_VOL_UP */
 				MX6QDL_PAD_KEY_ROW1__GPIO4_IO09		0x1b0b0 /* KEY_VOL_DN */
+			>;
+		};
+
+		pinctrl_gpio_power: gpio_power {
+			fsl,pins = <
+				MX6QDL_PAD_EIM_BCLK__GPIO6_IO31		0x1b0b0 /* POWER_CTRL */
 			>;
 		};
 
